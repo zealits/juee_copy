@@ -16,42 +16,48 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "20.x"
-       
 
-    #   - name: Install Dependencies
-    #     run: |
-    #       cd front-end
-    #       npm install
-    #       cd ../back-end
-    #       npm install
+      #   - name: Install Dependencies
+      #     run: |
+      #       cd front-end
+      #       npm install
+      #       cd ../back-end
+      #       npm install
 
-    #   - name: Build Frontend
-    #     run: |
-    #       cd front-end
-    #       npm run build:prod
-    #     env:
-    #       VITE_APP_MODE: production
+      #   - name: Build Frontend
+      #     run: |
+      #       cd front-end
+      #       npm run build:prod
+      #     env:
+      #       VITE_APP_MODE: production
 
       - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.8.0
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
-
-      - name: Add known hosts
         run: |
           mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H dev.zealits.com >> ~/.ssh/known_hosts
 
-      - name: Deploy Application
+      - name: Deploy to server
+        if: github.ref == 'refs/heads/main'
         run: |
-          # Copy all files to server
-          rsync -avz --delete \
-            . \
-            admin@dev.zealits.com:/var/www/meetings/
+          ssh admin@dev.zealits.com << 'EOF'
+            # Create directory if it doesn't exist
+            mkdir -p /var/www/meetings
 
-          # Run setup script on server
-          ssh admin@dev.zealits.com '
-            cd /var/www/meetings
+            # Check if repository exists
+            if [ -d "/var/www/meetings/juee_copy" ]; then
+              echo "Repository exists, pulling latest changes..."
+              cd /var/www/meetings/juee_copy
+              git pull origin main
+            else
+              echo "Cloning repository..."
+              cd /var/www/meetings
+              git clone https://github.com/zealits/juee_copy.git
+              cd juee_copy
+            fi
+
+            # Make setup script executable and run it
             chmod +x setup.sh
             ./setup.sh
-          '
+          EOF

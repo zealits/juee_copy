@@ -1,4 +1,6 @@
 const fs = require("fs"); //we need this to read our keys. Part of node
+
+//in production, we will use https
 const https = require("https"); //we need this for a secure express server. part of node
 const http = require("http");
 //express sets up the http server and serves our front end
@@ -6,35 +8,45 @@ const express = require("express");
 const app = express();
 const path = require("path");
 const WebSocket = require("ws"); // Add WebSocket for transcription
+const config = require("./config/config");
 //seve everything in public statically
 app.use(express.static("public"));
 
-const key = fs.readFileSync("../meetings-certs/privkey.pem");
-const cert = fs.readFileSync("../meetings-certs/fullchain.pem");
-const options = { key, cert };
+//in production, we will use the keys in the meetings-certs folder
+// const key = fs.readFileSync("../meetings-certs/privkey.pem");
+// const cert = fs.readFileSync("../meetings-certs/fullchain.pem");
+
+// in development, we will use the keys in the config folder
+// const key = fs.readFileSync("./config/create-cert-key.pem");
+// const cert = fs.readFileSync("./config/create-cert.pem");
+
+// const options = { key, cert };
+
 //use those keys with the https module to have https
-const httpsServer = https.createServer(options, app)
+// const httpsServer = https.createServer(options, app)
 
 // Add CORS middleware
- app.use((req, res, next) => {
+app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
- });
+});
 
-//get the keys we made with mkcert
-// const key = fs.readFileSync("./config/create-cert-key.pem");
-// const cert = fs.readFileSync("./config/create-cert.pem");
-// const options = { key, cert };
-//use those keys with the https module to have https
-// const httpsServer = https.createServer(options, app)
-//FOR LOCAL ONlY... non https
-// const httpServer = http.createServer(app);
+let server;
+if (config.currentEnv.useHttps) {
+  // Production HTTPS setup
+  const key = fs.readFileSync(config.currentEnv.keyPath);
+  const cert = fs.readFileSync(config.currentEnv.certPath);
+  const options = { key, cert };
+  server = https.createServer(options, app);
+} else {
+  // Development HTTP setup
+  server = http.createServer(app);
+}
 
 const socketio = require("socket.io");
 const mediasoup = require("mediasoup");
 
-const config = require("./config/config");
 const createWorkers = require("./utilities/createWorkers");
 const getWorker = require("./utilities/getWorker");
 const updateActiveSpeakers = require("./utilities/updateActiveSpeakers");
@@ -43,14 +55,16 @@ const Room = require("./classes/Room");
 
 //set up the socketio server, listening by way of our express https sever
 // const io = socketio(httpsServer,{
-const io = socketio(httpsServer, {
-  cors: [`https://localhost:5173`],
-  cors: [`http://localhost:5173`],
-  cors: [`https://192.168.1.44:3004`],
-  cors: [`https://154.53.42.27:3004`],
-  cors: [`http://154.53.42.27:3004`],
-  cors: [`https://meetings.aiiventure.com`],
-  transports: ['websocket', 'polling']
+const io = socketio(server, {
+  cors: [
+    `https://localhost:5173`,
+    `http://localhost:5173`,
+    `https://192.168.1.44:3004`,
+    `https://154.53.42.27:3004`,
+    `http://154.53.42.27:3004`,
+    `https://meetings.aiiventure.com`,
+  ],
+  transports: ["websocket", "polling"],
 });
 
 //our globals
@@ -432,5 +446,7 @@ app.get("*", (req, res) => {
   res.sendFile(path.resolve(__dirname, "../front-end/dist/index.html"));
 });
 
-httpsServer.listen(config.port)
-// httpServer.listen(config.port);
+// httpsServer.listen(config.port)
+server.listen(config.currentEnv.port, () => {
+  console.log(`Server running in ${config.currentEnv.mode} mode on port ${config.currentEnv.port}`);
+});

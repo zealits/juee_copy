@@ -15,7 +15,7 @@ cd ..
 echo "Installing frontend dependencies and building..."
 cd front-end
 npm install
-npm run build
+npm run build:prod
 cd ..
 
 # Install Python dependencies

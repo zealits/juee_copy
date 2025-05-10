@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
+import config from "../config/config";
 
 const InterviewAssistant = ({ localStream }) => {
   const [transcript, setTranscript] = useState("");
@@ -16,7 +17,9 @@ const InterviewAssistant = ({ localStream }) => {
   // Function to send transcription via HTTP POST
   const sendTranscription = async (transcript) => {
     try {
-      const response = await fetch("https://meetings.aiiventure.com/api/transcription", {
+      // in production, we will use the backend at htpps://meetings.aiiventure.com
+      // in development, we will use the backend at http://localhost:3004
+      const response = await fetch("http://localhost:3004/api/transcription", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -40,7 +43,9 @@ const InterviewAssistant = ({ localStream }) => {
   // Function to fetch transcriptions
   const fetchTranscriptions = async () => {
     try {
-      const response = await fetch("https://meetings.aiiventure.com/api/transcriptions");
+      // in production, we will use the backend at htpps://meetings.aiiventure.com
+      // in development, we will use the backend at http://localhost:3004
+      const response = await fetch("http://localhost:3004/api/transcriptions");
       const data = await response.json();
 
       // Process candidate transcriptions
@@ -70,13 +75,13 @@ const InterviewAssistant = ({ localStream }) => {
       setCurrentQuestion("");
 
       // Clear backend transcripts
-      await fetch("https://meetings.aiiventure.com/api/transcriptions/clear", {
+      await fetch(`${config.nodeApiUrl}/api/transcriptions/clear`, {
         method: "POST",
       });
 
-      // Reset on Python backend too (if needed)
+      // Reset on Python backend
       try {
-        const response = await fetch("https://meetings.aiiventure.com/reset", {
+        const response = await fetch(`${config.pythonApiUrl}/reset`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -167,12 +172,15 @@ const InterviewAssistant = ({ localStream }) => {
     try {
       console.log("Sending for analysis:", combinedTranscript);
 
-      const response = await fetch("https://meetings.aiiventure.com/api/python/analyze", {
+      const response = await fetch(`${config.pythonApiUrl}/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text: combinedTranscript }),
+        body: JSON.stringify({
+          text: combinedTranscript,
+         
+        }),
       });
 
       const data = await response.json();
@@ -245,7 +253,7 @@ const InterviewAssistant = ({ localStream }) => {
 
       // Clear backend transcripts
       try {
-        await fetch("http://localhost:3031/api/transcriptions/clear", {
+        await fetch(`${config.pythonApiUrl}/transcriptions/clear`, {
           method: "POST",
         });
       } catch (error) {
@@ -253,7 +261,7 @@ const InterviewAssistant = ({ localStream }) => {
       }
     } catch (error) {
       console.error("Error analyzing response:", error);
-      alert("Error connecting to the Python analysis backend. Make sure it's running on port 8000.");
+      alert("Error connecting to the Python analysis backend. Make sure it's running on port 8004.");
     } finally {
       setIsAnalyzing(false);
     }
@@ -305,10 +313,10 @@ const InterviewAssistant = ({ localStream }) => {
     });
 
     // Connect to Deepgram
-    const deepgramSocket = new WebSocket("wss://api.deepgram.com/v1/listen", [
-      "token",
-      "1f3fc83e4559e5e5db749b92a75fbd0d66813d3e",
-    ]);
+    const deepgramSocket = new WebSocket(
+      "wss://api.deepgram.com/v1/listen?model=nova-3&punctuate=true&utterances=true",
+      ["token", "1f3fc83e4559e5e5db749b92a75fbd0d66813d3e"]
+    );
 
     deepgramSocket.onopen = () => {
       setIsConnected(true);

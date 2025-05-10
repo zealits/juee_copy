@@ -1,4 +1,27 @@
 const config = {
+  // Environment settings
+  env: {
+    development: {
+      mode: "development",
+      port: 3004,
+      useHttps: false,
+    },
+    production: {
+      mode: "production",
+      port: 3004,
+      useHttps: true,
+      certPath: "../meetings-certs/fullchain.pem",
+      keyPath: "../meetings-certs/privkey.pem",
+    },
+  },
+
+  // Get current environment settings
+  get currentEnv() {
+    const env = process.env.NODE_ENV || "production";
+    return this.env[env];
+  },
+
+  // Existing settings
   port: 3004,
   workerSettings: {
     //rtcMinPort and max are just arbitray ports for our traffic

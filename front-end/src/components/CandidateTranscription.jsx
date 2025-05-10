@@ -6,7 +6,9 @@ const CandidateTranscription = ({ localStream }) => {
   // Function to send transcription via HTTP POST
   const sendTranscription = async (transcript) => {
     try {
-      const response = await fetch("https://meetings.aiiventure.com/api/transcription", {
+      // in production, we will use the backend at htpps://meetings.aiiventure.com
+      // in development, we will use the backend at http://localhost:3004
+      const response = await fetch("http://localhost:3004/api/transcription", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

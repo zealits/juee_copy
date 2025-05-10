@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import marked from "marked";
+import config from "../config/config";
 
 const InterviewAssistant = ({ localStream }) => {
   const [transcript, setTranscript] = useState("");
@@ -14,7 +15,9 @@ const InterviewAssistant = ({ localStream }) => {
 
   const resetInterview = async () => {
     try {
-      const response = await fetch("http://localhost:8000/reset", {
+      // in development, we will use the backend at http://localhost:8004 as this python backend is running on port 8004
+      // in production, we will use the backend at htpps://meetings.aiiventure.com
+      const response = await fetch("http://localhost:8004/api/python/reset", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -37,7 +40,9 @@ const InterviewAssistant = ({ localStream }) => {
 
     setIsAnalyzing(true);
     try {
-      const response = await fetch("http://localhost:8000/analyze", {
+      // in development, we will use the backend at http://localhost:8004 as this python backend is running on port 8004
+      // in production, we will use the backend at htpps://meetings.aiiventure.com
+      const response = await fetch("http://localhost:8004/api/python/analyze", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -65,6 +70,26 @@ const InterviewAssistant = ({ localStream }) => {
       console.error("Error analyzing response:", error);
     } finally {
       setIsAnalyzing(false);
+    }
+  };
+
+  const sendTranscription = async (text, sender) => {
+    try {
+      const response = await fetch(`${config.nodeApiUrl}/api/transcription`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          transcript: text,
+          sender: sender,
+          timestamp: new Date().toISOString(),
+        }),
+      });
+      const data = await response.json();
+      // ... handle response ...
+    } catch (error) {
+      console.error("Error sending transcription:", error);
     }
   };
 
@@ -100,11 +125,12 @@ const InterviewAssistant = ({ localStream }) => {
 
     // Connect to Deepgram
     const deepgramSocket = new WebSocket(
-                    "wss://api.deepgram.com/v1/listen?model=nova-3&punctuate=true&utterances=true", ["token", "1f3fc83e4559e5e5db749b92a75fbd0d66813d3e"]
-     );
+      "wss://api.deepgram.com/v1/listen?model=nova-3&punctuate=true&utterances=true",
+      ["token", "1f3fc83e4559e5e5db749b92a75fbd0d66813d3e"]
+    );
 
     // Connect to Python backend
-    pythonSocketRef.current = new WebSocket("ws://localhost:8000/ws/transcription");
+    pythonSocketRef.current = new WebSocket(`${config.pythonApiUrl.replace("http", "ws")}/ws/transcription`);
 
     pythonSocketRef.current.onopen = () => {
       console.log("Connected to Python backend");

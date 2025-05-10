@@ -1,14 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { io } from "socket.io-client";
 import { Device } from "mediasoup-client";
 import getMic2 from "../utils/getMic2";
 import createProducerTransport from "../utils/mediaSoupFunctions/createProducerTransport";
 import createProducer from "../utils/mediaSoupFunctions/createProducer";
 import requestTransportToConsume from "../utils/mediaSoupFunctions/requestTransportToConsume";
+import config from "../config/config";
 
 const useMediaSoup = () => {
+  const socketRef = useRef(null);
   const [socket, setSocket] = useState(null);
   const [device, setDevice] = useState(null);
   const [localStream, setLocalStream] = useState(null);
@@ -29,16 +31,22 @@ const useMediaSoup = () => {
 
   // Initialize socket connection
   useEffect(() => {
-    const socketInstance = io.connect("https://meetings.aiiventure.com");
+    // Initialize socket connection with config
+    const socketInstance = io(config.socketUrl, {
+      transports: ["websocket", "polling"],
+    });
 
     socketInstance.on("connect", () => {
       console.log("Connected to socket server");
     });
 
+    socketRef.current = socketInstance;
     setSocket(socketInstance);
 
     return () => {
-      socketInstance.disconnect();
+      if (socketInstance) {
+        socketInstance.disconnect();
+      }
     };
   }, []);
 

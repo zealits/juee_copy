@@ -12,7 +12,7 @@ module.exports = {
     },
     {
       name: "python-backend",
-      script: "python-backend/main.py",
+      script: "python-backend/simple_backend.py",
       interpreter: "python3",
       watch: false,
       instances: 1,

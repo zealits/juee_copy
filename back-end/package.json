@@ -1,0 +1,21 @@
+{
+  "name": "video-conf",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^4.21.2",
+    "mediasoup": "^3.15.6",
+    "path": "^0.12.7",
+    "socket.io": "^4.8.1",
+    "ws": "^8.18.1"
+  }
+}

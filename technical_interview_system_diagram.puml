@@ -1,0 +1,71 @@
+@startuml Technical Interview Assistant System
+
+' Define actors
+actor "Candidate" as candidate
+actor "Interviewer" as interviewer
+actor "Recruiter" as recruiter
+actor "Admin" as admin
+
+' Define systems
+rectangle "Front-End Application" as frontend {
+  usecase "Join Interview Room" as join
+  usecase "Toggle Audio/Video" as media
+  usecase "End Call" as end
+  usecase "View Interview Participants" as view
+  usecase "Analyze Facial Expressions" as analyze_face
+}
+
+rectangle "MediaSoup Server (Back-End)" as backend {
+  usecase "Create Rooms" as create_room
+  usecase "Manage Media Streams" as manage_media
+  usecase "Handle WebRTC Connections" as webrtc
+  usecase "Support Audio/Video Transport" as transport
+}
+
+rectangle "Python Analysis Backend" as python_backend {
+  usecase "Process Real-time Transcriptions" as transcribe
+  usecase "Analyze Interview Responses" as analyze
+  usecase "Generate Follow-up Questions" as generate
+  usecase "Provide Interview Feedback" as feedback
+}
+
+' Define relationships
+candidate --> join
+candidate --> media
+candidate --> end
+candidate --> view
+
+interviewer --> join
+interviewer --> media
+interviewer --> end
+interviewer --> view
+interviewer --> analyze_face
+interviewer --> feedback
+
+recruiter --> join
+recruiter --> media
+recruiter --> end
+recruiter --> view
+recruiter --> analyze_face
+recruiter --> feedback
+
+admin --> create_room
+
+' System interactions
+join --> create_room
+media --> manage_media
+manage_media --> webrtc
+webrtc --> transport
+
+frontend --> backend : WebSocket/Socket.IO
+frontend --> python_backend : WebSocket/HTTP API
+
+' Activities flow
+candidate --> transcribe : Speech
+transcribe --> analyze : Text
+analyze --> generate : AI Analysis
+generate --> interviewer : Suggested Questions
+analyze --> feedback : Performance Assessment
+feedback --> interviewer : Interview Insights
+
+@enduml 

@@ -15,22 +15,22 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: "18"
-          cache: "npm"
+          node-version: "20.x"
+       
 
-      - name: Install Dependencies
-        run: |
-          cd front-end
-          npm install
-          cd ../back-end
-          npm install
+    #   - name: Install Dependencies
+    #     run: |
+    #       cd front-end
+    #       npm install
+    #       cd ../back-end
+    #       npm install
 
-      - name: Build Frontend
-        run: |
-          cd front-end
-          npm run build:prod
-        env:
-          VITE_APP_MODE: production
+    #   - name: Build Frontend
+    #     run: |
+    #       cd front-end
+    #       npm run build:prod
+    #     env:
+    #       VITE_APP_MODE: production
 
       - name: Setup SSH
         uses: webfactory/ssh-agent@v0.8.0

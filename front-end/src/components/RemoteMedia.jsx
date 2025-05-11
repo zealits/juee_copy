@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { User } from "lucide-react";
 import FaceExpressionAnalyzer from "./FaceExpressionAnalyzer";
 
@@ -66,21 +66,36 @@ const VideoContainer = ({ stream, username, userRole, isMainSpeaker = false }) =
   );
 };
 
-const RemoteMedia = ({ consumers, activeSpeakers }) => {
+const RemoteMedia = ({ consumers, activeSpeakers, localStream, localUserInfo }) => {
+  const [lastActiveSpeaker, setLastActiveSpeaker] = useState(null);
+
+  // Update last active speaker when activeSpeakers changes
+  useEffect(() => {
+    if (activeSpeakers && activeSpeakers.length > 0) {
+      setLastActiveSpeaker(activeSpeakers[0]);
+    }
+  }, [activeSpeakers]);
+
   // Filter out current user's producer from active speakers
   const filteredSpeakers = activeSpeakers || [];
-  const mainSpeaker = filteredSpeakers[0];
+  const mainSpeaker = lastActiveSpeaker || filteredSpeakers[0];
   const otherSpeakers = filteredSpeakers.slice(1, 5);
+
+  // Add local stream to other speakers if not the main speaker
+  const allSpeakers = [...otherSpeakers];
+  if (localStream && mainSpeaker !== "local") {
+    allSpeakers.push("local");
+  }
 
   return (
     <div className="space-y-4">
       {/* Current Speaker Video (Large Center Video) */}
-      {mainSpeaker && consumers[mainSpeaker] ? (
+      {mainSpeaker && (consumers[mainSpeaker] || mainSpeaker === "local") ? (
         <div className="overflow-hidden rounded-xl shadow-xl border border-slate-700">
           <VideoContainer
-            stream={consumers[mainSpeaker]?.combinedStream}
-            username={consumers[mainSpeaker]?.userName}
-            userRole={consumers[mainSpeaker]?.userRole}
+            stream={mainSpeaker === "local" ? localStream : consumers[mainSpeaker]?.combinedStream}
+            username={mainSpeaker === "local" ? localUserInfo?.userName : consumers[mainSpeaker]?.userName}
+            userRole={mainSpeaker === "local" ? localUserInfo?.userRole : consumers[mainSpeaker]?.userRole}
             isMainSpeaker={true}
           />
         </div>
@@ -94,17 +109,17 @@ const RemoteMedia = ({ consumers, activeSpeakers }) => {
       )}
 
       {/* Small videos at top (non-dominant speakers) */}
-      {otherSpeakers.length > 0 && (
+      {allSpeakers.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {otherSpeakers.map((speakerId, index) => (
+          {allSpeakers.map((speakerId, index) => (
             <div
               key={speakerId || `empty-${index}`}
               className="overflow-hidden rounded-xl shadow-lg border border-slate-700"
             >
               <VideoContainer
-                stream={consumers[speakerId]?.combinedStream}
-                username={consumers[speakerId]?.userName}
-                userRole={consumers[speakerId]?.userRole}
+                stream={speakerId === "local" ? localStream : consumers[speakerId]?.combinedStream}
+                username={speakerId === "local" ? localUserInfo?.userName : consumers[speakerId]?.userName}
+                userRole={speakerId === "local" ? localUserInfo?.userRole : consumers[speakerId]?.userRole}
               />
             </div>
           ))}

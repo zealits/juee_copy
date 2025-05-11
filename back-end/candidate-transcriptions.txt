@@ -1,218 +1,36 @@
-[2025-05-02T09:47:38.327Z] hello what is your name
-[2025-05-02T09:47:39.648Z] four digit name
-[2025-05-02T09:47:45.278Z] my name is
-[2025-05-02T09:47:46.800Z] my name is
-[2025-05-02T09:47:48.922Z] i need it
-[2025-05-02T09:47:49.383Z] i it
-[2025-05-02T10:46:45.051Z] hello
-[2025-05-02T10:46:57.910Z] hello
-[2025-05-02T10:46:58.270Z] h
-[2025-05-02T10:47:05.726Z] that's
-[2025-05-02T10:47:06.267Z] that's
-[2025-05-02T10:47:09.815Z] alright
-[2025-05-02T10:47:11.127Z] alright
-[2025-05-02T10:49:26.094Z] four
-[2025-05-02T10:49:28.129Z] make
-[2025-05-02T10:49:29.929Z] includes
-[2025-05-02T10:49:32.755Z] twenty nine
-[2025-05-02T10:49:37.065Z] make
-[2025-05-02T10:49:48.049Z] includes
-[2025-05-02T10:49:48.803Z] twenty nine
-[2025-05-02T10:59:53.221Z] my
-[2025-05-02T11:00:02.738Z] might
-[2025-05-02T11:00:03.339Z] mike
-[2025-05-02T11:00:46.567Z] bye
-[2025-05-02T13:29:36.741Z] i
-[2025-05-02T13:29:36.771Z] i
-[2025-05-02T13:30:13.586Z] right
-[2025-05-02T13:30:13.682Z] right
-[2025-05-02T17:06:58.553Z] correct
-[2025-05-02T17:06:58.648Z] correct
-[2025-05-02T17:06:59.595Z] back
-[2025-05-02T17:06:59.676Z] back
-[2025-05-02T17:14:01.854Z] plus plus to form
-[2025-05-02T17:14:01.855Z] plus to form
-[2025-05-02T17:21:00.729Z] c plus plus
-[2025-05-02T17:21:01.611Z] c plus plus
-[2025-05-02T17:21:03.701Z] is a homecoming liquid
-[2025-05-02T17:21:03.845Z] is a homecoming liquid
-[2025-05-02T17:21:12.717Z] programming
-[2025-05-02T17:21:13.383Z] programming
-[2025-05-02T17:21:13.840Z] language
-[2025-05-02T17:21:13.988Z] language
-[2025-05-02T17:25:24.611Z] you
-[2025-05-02T17:25:25.148Z] you
-[2025-05-02T17:25:27.648Z] language
-[2025-05-02T17:25:28.181Z] language
-[2025-05-02T17:25:33.775Z] five
-[2025-05-02T17:25:34.025Z] five
-[2025-05-02T17:25:36.833Z] it's
-[2025-05-02T17:25:37.071Z] it's
-[2025-05-02T17:25:37.874Z] programming
-[2025-05-02T17:25:38.066Z] programming
-[2025-05-02T17:25:39.886Z] language
-[2025-05-02T17:25:40.084Z] language
-[2025-05-02T17:30:16.342Z] for
-[2025-05-02T17:30:18.366Z] languages
-[2025-05-02T17:30:18.431Z] languages
-[2025-05-02T17:30:24.497Z] five
-[2025-05-02T17:30:24.599Z] five
-[2025-05-02T17:31:33.893Z] no
-[2025-05-02T17:31:34.017Z] no
-[2025-05-02T17:47:16.698Z] just in
-[2025-05-02T17:47:19.614Z] screen sharing option
-[2025-05-02T17:47:19.759Z] screen sharing option
-[2025-05-02T17:47:21.657Z] didn't
-[2025-05-02T17:47:21.802Z] didn't
-[2025-05-02T17:47:28.888Z] does face like solutions over
-[2025-05-02T17:47:28.944Z] does face like solutions over
-[2025-05-02T17:47:54.394Z] that only the
-[2025-05-02T17:47:54.434Z] that only the
-[2025-05-02T17:48:02.638Z] can we
-[2025-05-02T17:48:02.816Z] can we
-[2025-05-02T17:48:49.404Z] for the candidate is
-[2025-05-02T17:48:49.688Z] for the candidate is
-[2025-05-02T17:48:59.674Z] transcription
-[2025-05-02T17:48:59.929Z] transcription
-[2025-05-07T15:11:51.119Z] my name is name
-[2025-05-07T15:13:20.568Z] hello
-[2025-05-07T15:13:26.140Z] hello
-[2025-05-07T15:13:51.524Z] hello
-[2025-05-07T15:15:39.001Z] you had the my best time to think
-[2025-05-07T15:15:59.066Z] best master
-[2025-05-07T15:16:00.302Z] to
-[2025-05-07T15:16:09.247Z] i love you i love you
-[2025-05-07T15:16:18.254Z] are you sure if you know me
-[2025-05-07T17:27:15.818Z] my name is
-[2025-05-07T17:38:03.584Z] full stack
-[2025-05-07T17:38:05.618Z] development
-[2025-05-07T17:38:06.637Z] includes
-[2025-05-07T17:38:07.663Z] front end
-[2025-05-07T17:38:09.709Z] and back
-[2025-05-07T17:40:32.571Z] it includes
-[2025-05-07T19:01:28.832Z] d k
-[2025-05-07T19:01:30.873Z] i believe the user
-[2025-05-07T19:01:31.892Z] two ones
-[2025-05-07T19:01:35.973Z] any the role interview
-[2025-05-07T19:01:41.070Z] my
-[2025-05-07T19:02:46.289Z] data data
-[2025-05-08T03:22:17.223Z] hello
-[2025-05-08T03:22:25.395Z] a meeting with the silence server
-[2025-05-08T03:24:02.316Z] hello
-[2025-05-08T03:24:10.456Z] hello
-[2025-05-08T03:24:23.802Z] meetings dot here at venture dot com
-[2025-05-08T03:24:30.924Z] meetings
-[2025-05-08T03:24:40.074Z] deep
-[2025-05-08T03:24:46.269Z] hello
-[2025-05-08T03:25:47.125Z] hello
-[2025-05-08T03:26:05.625Z] that i can do
-[2025-05-08T03:26:52.073Z] ready
-[2025-05-08T03:27:38.059Z] meetings slot ai in general
-[2025-05-08T03:27:50.511Z] you are
-[2025-05-08T03:28:03.857Z] twelve
-[2025-05-08T03:28:50.821Z] to join us what
-[2025-05-08T03:29:08.826Z] so transcription
-[2025-05-08T03:30:26.078Z] okay
-[2025-05-08T03:30:45.347Z] two
-[2025-05-08T03:32:17.329Z] so
-[2025-05-08T03:32:19.543Z] candidates
-[2025-05-08T03:32:34.909Z] of
-[2025-05-08T03:32:46.265Z] meeting screen share
-[2025-05-08T03:33:02.595Z] okay
-[2025-05-08T03:33:17.306Z] yes
-[2025-05-08T03:34:22.276Z] back from this study
-[2025-05-08T03:34:26.710Z] hello
-[2025-05-08T03:34:26.758Z] hello
-[2025-05-08T03:34:33.563Z] no driven a scroll number
-[2025-05-08T03:34:42.805Z] as interview
-[2025-05-08T03:34:52.095Z] this
-[2025-05-08T03:35:25.319Z] i think a
-[2025-05-08T03:38:55.446Z] okay should joins are good
-[2025-05-08T03:39:00.294Z] happens
-[2025-05-08T03:39:02.607Z] i
-[2025-05-08T03:39:22.275Z] sorry
-[2025-05-08T03:39:48.443Z] meetings application
-[2025-05-08T03:39:53.541Z] okay
-[2025-05-08T03:39:54.549Z] to that you
-[2025-05-08T03:39:56.571Z] google meet
-[2025-05-08T03:40:17.036Z] hello hello
-[2025-05-08T03:40:17.338Z] hello hello
-[2025-05-08T03:40:27.158Z] hi
-[2025-05-08T03:40:27.540Z] hi
-[2025-05-08T03:40:28.249Z] hello hello
-[2025-05-08T03:40:28.579Z] hello hello
-[2025-05-08T03:40:44.855Z] okay
-[2025-05-08T03:40:44.874Z] okay
-[2025-05-08T03:41:22.202Z] audio
-[2025-05-08T03:41:44.857Z] okay
-[2025-05-08T03:42:25.139Z] hi so that's what is your name
-[2025-05-08T03:42:35.118Z] and i'm am here for python developer
-[2025-05-08T03:42:49.803Z] let us talk about the
-[2025-05-08T03:42:55.967Z] let's start from right
-[2025-05-08T03:42:57.619Z] oh
-[2025-05-08T03:42:59.664Z] so
-[2025-05-08T03:43:09.737Z] i'm gonna do me this excuse
-[2025-05-08T03:43:18.189Z] so i
-[2025-05-08T03:44:43.547Z] so there's a hey you can can't to speech find
-[2025-05-08T03:44:44.536Z] okay
-[2025-05-08T03:44:46.223Z] active speaker
-[2025-05-08T03:44:51.345Z] if
-[2025-05-08T03:44:53.666Z] when
-[2025-05-08T03:45:07.775Z] no active speaker was there by
-[2025-05-08T03:45:15.344Z] you got something
-[2025-05-08T03:45:20.005Z] brother
-[2025-05-08T03:48:25.698Z] okay one the active speaker it for
-[2025-05-08T03:48:52.312Z] like
-[2025-05-08T03:48:56.761Z] a set section for
-[2025-05-08T03:49:03.584Z] okay i'm not like more into this
-[2025-05-08T03:49:05.615Z] just stuck up with the right hand side
-[2025-05-08T03:49:16.207Z] they are
-[2025-05-08T03:49:22.489Z] getting
-[2025-05-08T03:49:23.143Z] okay
-[2025-05-08T03:49:43.260Z] so actually me modify any
-[2025-05-08T03:49:54.650Z] second what the
-[2025-05-08T03:49:57.715Z] meeting
-[2025-05-08T03:50:52.226Z] okay
-[2025-05-08T03:51:10.013Z] what
-[2025-05-08T03:51:50.286Z] okay can you switch anyways okay
-[2025-05-08T03:54:34.878Z] currently
-[2025-05-08T03:55:07.806Z] okay myself is that sorry i'm currently studying in college
-[2025-05-08T03:55:11.902Z] engineering sorry and i'm pursuing my be
-[2025-05-08T03:55:12.930Z] degree in computer engineering
-[2025-05-08T03:55:57.298Z] okay
-[2025-05-08T03:56:08.667Z] okay
-[2025-05-08T03:56:16.945Z] hello sam
-[2025-05-08T03:56:21.084Z] sir i'm fine and yes
-[2025-05-08T03:56:29.287Z] sir i'm from pun like
-[2025-05-08T03:56:31.426Z] i have been bra brown a born and brought him pun
-[2025-05-08T03:56:32.434Z] yes
-[2025-05-08T03:56:42.776Z] variable variable is
-[2025-05-08T03:56:46.871Z] anything like we just give a name to a variable variable means
-[2025-05-08T03:56:49.965Z] it holds a value which we define
-[2025-05-08T03:56:55.084Z] so that's available which can port a value
-[2025-05-08T03:56:57.172Z] it can be vendor do like in float and anything
-[2025-05-08T03:57:07.541Z] java language
-[2025-05-08T03:57:12.657Z] sorry sir i am i have not done jab language
-[2025-05-08T03:57:19.873Z] i'm comfortable in python
-[2025-05-08T03:57:30.262Z] first of all characteristics of python languages like
-[2025-05-08T03:57:34.390Z] python is easy to understand and easy to code which gives us upper hand in
-[2025-05-08T03:57:37.550Z] complex machine learning algorithms which we can design with with queries
-[2025-05-08T03:57:42.799Z] and also with the help of python because it's dynamic programming
-[2025-05-08T03:57:44.749Z] the more focus is
-[2025-05-08T03:57:49.978Z] not not on like giving definite defining every other variable
-[2025-05-08T03:57:54.159Z] but the more focus in designing complex algorithms with is
-[2025-05-08T03:57:57.237Z] so that's one characteristic which i say okay
-[2025-05-08T04:00:07.491Z] ja and said okay
-[2025-05-08T04:00:21.842Z] sure
-[2025-05-08T04:01:14.705Z] yes sir
-[2025-05-08T04:01:27.155Z] hours
-[2025-05-08T04:01:30.318Z] one three
-[2025-05-08T04:02:57.098Z] nine
-[2025-05-08T04:03:21.941Z] no sir
-[2025-05-08T04:04:48.467Z] whether it's quite windy today
-[2025-05-08T04:04:49.517Z] and it actually rain yesterday
-[2025-05-08T04:05:46.082Z] okay
-[2025-05-08T04:05:56.344Z] my
-[2025-05-08T04:06:01.493Z] okay
-[2025-05-08T04:06:12.802Z] okay sir
-[2025-05-08T04:06:16.944Z] meeting
+[2025-05-11T05:44:08.398Z] hello
+[2025-05-11T05:44:08.425Z] hello
+[2025-05-11T05:44:13.253Z] satellite my name is any get
+[2025-05-11T05:44:13.529Z] satellite my name is any
+[2025-05-11T05:45:31.061Z] my name is an
+[2025-05-11T05:45:31.777Z] My name is Anika.
+[2025-05-11T05:45:41.252Z] assistant
+[2025-05-11T05:45:46.354Z] interview
+[2025-05-11T05:45:47.081Z] Interview.
+[2025-05-11T05:46:21.030Z] just my desk
+[2025-05-11T05:46:37.353Z] what i'm doing on
+[2025-05-11T05:46:47.548Z] don't wanna this camera
+[2025-05-11T05:47:23.247Z] yes i'm
+[2025-05-11T05:48:47.913Z] but
+[2025-05-11T05:48:48.491Z] Bye.
+[2025-05-11T05:55:35.042Z] I want
+[2025-05-11T06:32:14.552Z] Hello?
+[2025-05-11T06:32:22.546Z] What is it?
+[2025-05-11T06:32:22.721Z] What is it?
+[2025-05-11T06:37:09.091Z] No.
+[2025-05-11T06:37:09.151Z] The
+[2025-05-11T06:39:14.615Z] can't
+[2025-05-11T06:39:14.611Z] I
+[2025-05-11T06:39:14.612Z] I
+[2025-05-11T06:39:14.628Z] can't
+[2025-05-11T06:43:53.706Z] Hello?
+[2025-05-11T06:43:53.776Z] Hello?
+[2025-05-11T07:13:23.459Z] meeting
+[2025-05-11T07:14:32.200Z] hi
+[2025-05-11T07:14:34.069Z] all
+[2025-05-11T07:14:37.303Z] hello
+[2025-05-11T07:14:37.653Z] hello
+[2025-05-11T07:14:44.443Z] some
+[2025-05-11T07:14:45.472Z] you're gonna
+[2025-05-11T07:14:45.544Z] so
+[2025-05-11T07:14:45.547Z] you're gonna

@@ -100,12 +100,20 @@ function App() {
             {/* Video area - takes full width for candidates, half for others */}
             <div className={`flex flex-col bg-slate-900 overflow-auto ${showInterviewAssistant ? "flex-1" : "w-full"}`}>
               <div className="flex-1 p-4">
-                <RemoteMedia consumers={consumers} activeSpeakers={activeSpeakers} />
+                <RemoteMedia
+                  consumers={consumers}
+                  activeSpeakers={activeSpeakers}
+                  localStream={localStream}
+                  localUserInfo={{
+                    userName:  "You",
+                    userRole: userRole,
+                  }}
+                />
               </div>
 
-              <div className="p-4 border-t border-slate-700">
+              {/* <div className="p-4 border-t border-slate-700">
                 <LocalMedia localStream={localStream} isCameraEnabled={isCameraEnabled} userRole={userRole} />
-              </div>
+              </div> */}
             </div>
 
             {/* Assistant area - only shown for interviewers and recruiters */}

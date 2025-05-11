@@ -67,7 +67,7 @@ jobs:
             # Install frontend dependencies and build
             echo "Installing frontend dependencies and building..."
             cd front-end
-            npm install
+            npm install --force
             npm run build:prod
             cd ..
             

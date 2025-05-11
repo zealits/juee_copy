@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: "node-backend",
+      name: "juee_copy-node-backend",
       script: "back-end/server.js",
       env: {
         NODE_ENV: "production",
@@ -11,7 +11,7 @@ module.exports = {
       exec_mode: "fork",
     },
     {
-      name: "python-backend",
+      name: "juee_copy-python-backend",
       script: "python-backend/simple_backend.py",
       interpreter: "python3",
       watch: false,

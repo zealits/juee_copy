@@ -38,13 +38,17 @@ jobs:
           chmod 600 ~/.ssh/id_rsa
           ssh-keyscan -H dev.zealits.com >> ~/.ssh/known_hosts
 
+          # Test SSH connection
+          ssh -o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 admin@dev.zealits.com 'echo "SSH connection successful"'
+
       - name: Deploy to server
         if: github.ref == 'refs/heads/main'
         run: |
-          ssh admin@dev.zealits.com << 'EOF'
+          ssh -o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 admin@dev.zealits.com << 'EOF'
             # Create directory if it doesn't exist
             mkdir -p /var/www/meetings
-
+            echo "Created/verified directory: /var/www/meetings"
+            
             # Check if repository exists
             if [ -d "/var/www/meetings/juee_copy" ]; then
               echo "Repository exists, pulling latest changes..."
@@ -56,8 +60,46 @@ jobs:
               git clone https://github.com/zealits/juee_copy.git
               cd juee_copy
             fi
-
-            # Make setup script executable and run it
-            chmod +x setup.sh
-            ./setup.sh
+            
+            echo "Repository setup complete"
+            
+            # Install Node.js dependencies
+            echo "Installing Node.js backend dependencies..."
+            cd back-end
+            npm install
+            cd ..
+            
+            # Install frontend dependencies and build
+            echo "Installing frontend dependencies and building..."
+            cd front-end
+            npm install
+            npm run build:prod
+            cd ..
+            
+            # Install Python dependencies
+            echo "Installing Python backend dependencies..."
+            cd python-backend
+            pip3 install -r requirements.txt
+            cd ..
+            
+            # Install PM2 globally if not installed
+            if ! command -v pm2 &> /dev/null; then
+              echo "Installing PM2..."
+              npm install -g pm2
+            fi
+            
+            # Start/Restart applications with PM2
+            echo "Starting applications with PM2..."
+            cd /var/www/meetings/juee_copy
+            
+            # Start Node.js backend
+            pm2 start ecosystem.config.js
+            
+            # Start Python backend
+           # pm2 restart python-backend || pm2 start python-backend/app.py --name python-backend --interpreter python3
+            
+            # Save PM2 process list
+           # pm2 save
+            
+            echo "Deployment completed successfully"
           EOF

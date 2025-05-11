@@ -83,7 +83,7 @@ const RoomInfo = ({ onJoinRoom }) => {
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-center mb-6">Join Meeting</h2>
+        <h2 className="text-2xl font-bold text-center mb-6">Join Interview</h2>
 
         {/* Video preview */}
         <div className="relative overflow-hidden rounded-lg mb-6 bg-black aspect-video">

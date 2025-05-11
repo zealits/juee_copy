@@ -45,18 +45,13 @@ jobs:
         if: github.ref == 'refs/heads/main'
         run: |
           ssh -o ConnectTimeout=10 -o ServerAliveInterval=30 -o ServerAliveCountMax=3 admin@dev.zealits.com << 'EOF'
-            # Create directory if it doesn't exist
-            mkdir -p /var/www/meetings
-            echo "Created/verified directory: /var/www/meetings"
-            
             # Check if repository exists
-            if [ -d "/var/www/meetings/juee_copy" ]; then
+            if [ -d "juee_copy" ]; then
               echo "Repository exists, pulling latest changes..."
-              cd /var/www/meetings/juee_copy
+              cd juee_copy
               git pull origin main
             else
               echo "Cloning repository..."
-              cd /var/www/meetings
               git clone https://github.com/zealits/juee_copy.git
               cd juee_copy
             fi
@@ -82,24 +77,27 @@ jobs:
             pip3 install -r requirements.txt
             cd ..
             
-            # Install PM2 globally if not installed
-            if ! command -v pm2 &> /dev/null; then
-              echo "Installing PM2..."
-              npm install -g pm2
+            # Restart PM2 processes
+            echo "Restarting PM2 processes..."
+            cd ..
+            
+            # Check and restart Node.js backend
+            if pm2 list | grep -q "juee_copy-node-backend"; then
+              echo "Restarting Node.js backend..."
+              pm2 restart juee_copy-node-backend
+            else
+              echo "Starting Node.js backend..."
+              pm2 start ecosystem.config.js
             fi
             
-            # Start/Restart applications with PM2
-            echo "Starting applications with PM2..."
-            cd /var/www/meetings/juee_copy
-            
-            # Start Node.js backend
-            pm2 start ecosystem.config.js
-            
-            # Start Python backend
-           # pm2 restart python-backend || pm2 start python-backend/app.py --name python-backend --interpreter python3
-            
-            # Save PM2 process list
-           # pm2 save
+            # Check and restart Python backend
+            if pm2 list | grep -q "juee_copy-python-backend"; then
+              echo "Restarting Python backend..."
+              pm2 restart juee_copy-python-backend
+            else
+              echo "Starting Python backend..."
+              pm2 start python-backend/app.py --name juee_copy-python-backend --interpreter python3
+            fi
             
             echo "Deployment completed successfully"
           EOF

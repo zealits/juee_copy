@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef } from "react";
+import config from "../config/config";
 
 const CandidateTranscription = ({ localStream }) => {
   const [isConnected, setIsConnected] = useState(false);
@@ -6,9 +7,7 @@ const CandidateTranscription = ({ localStream }) => {
   // Function to send transcription via HTTP POST
   const sendTranscription = async (transcript) => {
     try {
-      // in production, we will use the backend at htpps://meetings.aiiventure.com
-      // in development, we will use the backend at http://localhost:3004
-      const response = await fetch("http://localhost:3004/api/transcription", {
+      const response = await fetch(`${config.nodeApiUrl}/api/transcription`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

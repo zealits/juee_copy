@@ -17,9 +17,7 @@ const InterviewAssistant = ({ localStream }) => {
   // Function to send transcription via HTTP POST
   const sendTranscription = async (transcript) => {
     try {
-      // in production, we will use the backend at htpps://meetings.aiiventure.com
-      // in development, we will use the backend at http://localhost:3004
-      const response = await fetch("http://localhost:3004/api/transcription", {
+      const response = await fetch(`${config.nodeApiUrl}/api/transcription`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -43,9 +41,7 @@ const InterviewAssistant = ({ localStream }) => {
   // Function to fetch transcriptions
   const fetchTranscriptions = async () => {
     try {
-      // in production, we will use the backend at htpps://meetings.aiiventure.com
-      // in development, we will use the backend at http://localhost:3004
-      const response = await fetch("http://localhost:3004/api/transcriptions");
+      const response = await fetch(`${config.nodeApiUrl}/api/transcriptions`);
       const data = await response.json();
 
       // Process candidate transcriptions
@@ -56,9 +52,6 @@ const InterviewAssistant = ({ localStream }) => {
         // Only update if there's a change
         setCandidateTranscript(allCandidateText);
       }
-
-      // We don't need to update interviewer transcripts from the fetch
-      // as those are already being tracked locally
     } catch (error) {
       console.error("[Interviewer] Error fetching transcriptions:", error);
     }
@@ -179,7 +172,6 @@ const InterviewAssistant = ({ localStream }) => {
         },
         body: JSON.stringify({
           text: combinedTranscript,
-         
         }),
       });
 

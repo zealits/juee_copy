@@ -87,15 +87,22 @@ const RemoteMedia = ({ consumers, activeSpeakers, localStream, localUserInfo }) 
     allSpeakers.push("local");
   }
 
+  // If no active speakers, show local stream as main speaker
+  const displayMainSpeaker = mainSpeaker || (localStream ? "local" : null);
+
   return (
     <div className="space-y-4">
       {/* Current Speaker Video (Large Center Video) */}
-      {mainSpeaker && (consumers[mainSpeaker] || mainSpeaker === "local") ? (
+      {displayMainSpeaker && (consumers[displayMainSpeaker] || displayMainSpeaker === "local") ? (
         <div className="overflow-hidden rounded-xl shadow-xl border border-slate-700">
           <VideoContainer
-            stream={mainSpeaker === "local" ? localStream : consumers[mainSpeaker]?.combinedStream}
-            username={mainSpeaker === "local" ? localUserInfo?.userName : consumers[mainSpeaker]?.userName}
-            userRole={mainSpeaker === "local" ? localUserInfo?.userRole : consumers[mainSpeaker]?.userRole}
+            stream={displayMainSpeaker === "local" ? localStream : consumers[displayMainSpeaker]?.combinedStream}
+            username={
+              displayMainSpeaker === "local" ? localUserInfo?.userName : consumers[displayMainSpeaker]?.userName
+            }
+            userRole={
+              displayMainSpeaker === "local" ? localUserInfo?.userRole : consumers[displayMainSpeaker]?.userRole
+            }
             isMainSpeaker={true}
           />
         </div>
@@ -103,7 +110,7 @@ const RemoteMedia = ({ consumers, activeSpeakers, localStream, localUserInfo }) 
         <div className="w-full h-[450px] rounded-xl bg-slate-800/50 border border-slate-700 flex items-center justify-center">
           <div className="text-center">
             <User size={80} className="mx-auto text-slate-600 mb-4" />
-            <p className="text-slate-400">No active speaker</p>
+            <p className="text-slate-400">Waiting for participants...</p>
           </div>
         </div>
       )}

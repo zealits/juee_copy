@@ -88,6 +88,43 @@ io.on("connect", (socket) => {
   let client; //this client object available to all our socket listeners
   const handshake = socket.handshake; //socket.handshake is where auth and query live
   //you could now check handshake for password, auth, etc.
+
+  // Add chat message handling
+  socket.on("sendChatMessage", (message) => {
+    if (!client || !client.room) {
+      return;
+    }
+
+    const chatMessage = {
+      id: Date.now(), // Unique ID for the message
+      text: message,
+      sender: client.userName,
+      senderRole: client.userRole,
+      timestamp: new Date().toISOString(),
+      socketId: socket.id, // Include socket ID to identify the sender
+    };
+
+    // Add message to room history
+    client.room.addChatMessage(chatMessage);
+
+    // Broadcast to all users in the room
+    io.to(client.room.roomName).emit("chatMessage", chatMessage);
+  });
+
+  socket.on("getChatHistory", (data, ackCb) => {
+    if (!client || !client.room) {
+      if (typeof ackCb === "function") {
+        ackCb([]);
+      }
+      return;
+    }
+
+    // Return chat history to requesting client
+    if (typeof ackCb === "function") {
+      ackCb(client.room.getChatHistory());
+    }
+  });
+
   socket.on("joinRoom", async ({ userName, roomName, userRole = "candidate" }, ackCb) => {
     let newRoom = false;
     client = new Client(userName, socket, userRole);
@@ -135,6 +172,7 @@ io.on("connect", (socket) => {
       videoPidsToCreate,
       associatedUserNames,
       associatedUserRoles,
+      chatHistory: client.room.getChatHistory(), // Send chat history when joining
     });
   });
   socket.on("requestTransport", async ({ type, audioPid }, ackCb) => {

@@ -7,6 +7,7 @@ import RemoteMedia from "./components/RemoteMedia";
 import LocalMedia from "./components/LocalMedia";
 import InterviewAssistant from "./components/InterviewAssistant";
 import NotificationSystem from "./components/NotificationSystem";
+import ChatInterface from "./components/ChatInterface";
 import useMediaSoup from "./hooks/useMediaSoup";
 import { loadModels } from "./utils/faceApiUtils";
 import CandidateTranscription from "./components/CandidateTranscription";
@@ -30,6 +31,7 @@ function App() {
     activeSpeakers,
     notifications,
     userRole,
+    socket,
   } = useMediaSoup();
 
   // Load face-api.js models on component mount
@@ -105,7 +107,7 @@ function App() {
                   activeSpeakers={activeSpeakers}
                   localStream={localStream}
                   localUserInfo={{
-                    userName:  "You",
+                    userName: "You",
                     userRole: userRole,
                   }}
                 />
@@ -126,6 +128,18 @@ function App() {
             {/* Hidden transcription for candidates - only logs to console */}
             {localStream && userRole === "candidate" && <CandidateTranscription localStream={localStream} />}
           </div>
+
+          {/* Chat interface */}
+          {isJoined && socket && (
+            <ChatInterface
+              socket={socket}
+              userRole={userRole}
+              onNewMessage={(message) => {
+                // Optional handling for new messages, e.g., play sound
+                console.log("New chat message:", message);
+              }}
+            />
+          )}
         </div>
       )}
     </div>

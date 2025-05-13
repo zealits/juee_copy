@@ -60,7 +60,7 @@ const config = {
     listenIps: [
       {
         ip: "0.0.0.0", // for production for dev use 127.0.0.1
-        announcedIp: "154.53.42.27", // for production for dev remove this
+         announcedIp: "154.53.42.27", // for production for dev remove this
       },
     ],
     //For a typical video stream with HD quality, you might set maxIncomingBitrate

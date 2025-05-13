@@ -21,6 +21,8 @@ const useMediaSoup = () => {
   const [activeSpeakers, setActiveSpeakers] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [userRole, setUserRole] = useState("candidate");
+  const [chatMessages, setChatMessages] = useState([]);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
 
   // UI state
   const [isJoined, setIsJoined] = useState(false);
@@ -28,6 +30,7 @@ const useMediaSoup = () => {
   const [isFeedSending, setIsFeedSending] = useState(false);
   const [isAudioMuted, setIsAudioMuted] = useState(false);
   const [isCameraEnabled, setIsCameraEnabled] = useState(true);
+  const [isChatOpen, setIsChatOpen] = useState(false);
 
   // Initialize socket connection
   useEffect(() => {
@@ -151,6 +154,83 @@ const useMediaSoup = () => {
     };
   }, [socket, device, consumers]);
 
+  // Handle chat messages
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleChatMessage = (message) => {
+      setChatMessages((prev) => [...prev, message]);
+
+      // Only increment unread count if chat isn't open
+      if (!isChatOpen) {
+        setUnreadChatCount((prev) => prev + 1);
+
+        // Add a notification for new message
+        const notificationId = Date.now();
+        const newNotification = {
+          id: notificationId,
+          type: "chat",
+          message: `New message from ${message.sender}: ${message.text.substring(0, 30)}${
+            message.text.length > 30 ? "..." : ""
+          }`,
+          timestamp: new Date(),
+        };
+
+        setNotifications((prev) => [...prev, newNotification]);
+
+        // Remove notification after 5 seconds
+        setTimeout(() => {
+          setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+        }, 5000);
+      }
+    };
+
+    socket.on("chatMessage", handleChatMessage);
+
+    return () => {
+      socket.off("chatMessage", handleChatMessage);
+    };
+  }, [socket, isChatOpen]);
+
+  // Clear unread count when chat is opened
+  useEffect(() => {
+    if (isChatOpen) {
+      setUnreadChatCount(0);
+    }
+  }, [isChatOpen]);
+
+  // Function to send a chat message
+  const sendChatMessage = (message) => {
+    if (!socket || !message.trim()) return;
+
+    try {
+      socket.emit("sendChatMessage", message);
+    } catch (err) {
+      console.error("Error sending chat message:", err);
+
+      // Add error notification
+      const notificationId = Date.now();
+      const newNotification = {
+        id: notificationId,
+        type: "error",
+        message: "Failed to send message. Please try again.",
+        timestamp: new Date(),
+      };
+
+      setNotifications((prev) => [...prev, newNotification]);
+
+      // Remove notification after 5 seconds
+      setTimeout(() => {
+        setNotifications((prev) => prev.filter((n) => n.id !== notificationId));
+      }, 5000);
+    }
+  };
+
+  // Function to toggle chat panel
+  const toggleChat = () => {
+    setIsChatOpen(!isChatOpen);
+  };
+
   // Join room function
   const joinRoom = useCallback(
     async (roomName, userName, mediaOptions = null) => {
@@ -184,6 +264,11 @@ const useMediaSoup = () => {
         });
 
         console.log("Join room response:", joinRoomResp);
+
+        // Load chat history if available
+        if (joinRoomResp.chatHistory) {
+          setChatMessages(joinRoomResp.chatHistory);
+        }
 
         const newDevice = new Device();
         await newDevice.load({
@@ -428,6 +513,13 @@ const useMediaSoup = () => {
     activeSpeakers,
     notifications,
     userRole,
+    socket,
+    chatMessages,
+    unreadChatCount,
+    sendChatMessage,
+    toggleChat,
+    isChatOpen,
+    setChatMessages,
   };
 };
 

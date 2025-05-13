@@ -409,7 +409,7 @@ const InterviewAssistant = ({ localStream }) => {
       </div>
 
       <div className="flex flex-col space-y-4 h-full overflow-auto p-4">
-        {/* Debug Info - Remove in production */}
+        {/* Debug Info - Remove in production d */}
         <div className="bg-red-900/30 rounded-lg p-2 text-xs">
           <h5 className="font-bold text-white mb-1">Debug Info:</h5>
           <div className="grid grid-cols-2 gap-2">

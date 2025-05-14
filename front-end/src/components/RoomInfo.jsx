@@ -70,6 +70,11 @@ const RoomInfo = ({ onJoinRoom }) => {
 
   const handleJoin = () => {
     if (roomName.trim()) {
+      // Store userName in localStorage for persistence
+      if (typeof window !== "undefined" && userName.trim()) {
+        localStorage.setItem("userName", userName.trim());
+      }
+      
       onJoinRoom(roomName, userName, { isCameraEnabled, isMicEnabled, localStream, userRole });
     }
   };

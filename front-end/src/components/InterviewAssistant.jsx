@@ -2,7 +2,7 @@ import { useEffect, useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 import config from "../config/config";
 
-const InterviewAssistant = ({ localStream }) => {
+const InterviewAssistant = ({ localStream, userName, socket, userRole }) => {
   const [transcript, setTranscript] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -10,13 +10,33 @@ const InterviewAssistant = ({ localStream }) => {
   const [previousAnalysis, setPreviousAnalysis] = useState("");
   const [nextQuestion, setNextQuestion] = useState("");
   const [expectedAnswer, setExpectedAnswer] = useState("");
-  const [candidateTranscript, setCandidateTranscript] = useState("");
+  const [allTranscriptions, setAllTranscriptions] = useState([]);
   const transcriptContainerRef = useRef(null);
   const pollingIntervalRef = useRef(null);
+  const [lastTranscript, setLastTranscript] = useState("");
+  const lastTranscriptTimestamp = useRef(0);
+  const [connectedUsers, setConnectedUsers] = useState({});
 
   // Function to send transcription via HTTP POST
   const sendTranscription = async (transcript) => {
     try {
+      // Skip if this is the same as the last transcript or if socket is not connected
+      if (transcript === lastTranscript || !socket) {
+        return false;
+      }
+
+      // Prevent rapid duplicate submissions by checking time since last submission
+      const now = Date.now();
+      if (now - lastTranscriptTimestamp.current < 1000) {
+        return false;
+      }
+
+      // Update tracking variables
+      setLastTranscript(transcript);
+      lastTranscriptTimestamp.current = now;
+
+      const timestamp = new Date().toISOString();
+
       const response = await fetch(`${config.nodeApiUrl}/api/transcription`, {
         method: "POST",
         headers: {
@@ -24,8 +44,10 @@ const InterviewAssistant = ({ localStream }) => {
         },
         body: JSON.stringify({
           transcript: transcript,
-          timestamp: new Date().toISOString(),
-          sender: "interviewer",
+          timestamp,
+          sender: userRole || "interviewer", // Use actual role from props
+          senderName: userName || "Interviewer",
+          socketId: socket?.id || null,
         }),
       });
 
@@ -41,17 +63,12 @@ const InterviewAssistant = ({ localStream }) => {
   // Function to fetch transcriptions
   const fetchTranscriptions = async () => {
     try {
-      const response = await fetch(`${config.nodeApiUrl}/api/transcriptions`);
+      // Fetch all transcriptions in chronological order
+      const response = await fetch(`${config.nodeApiUrl}/api/transcriptions/all`);
       const data = await response.json();
 
-      // Process candidate transcriptions
-      if (data.candidate && data.candidate.length > 0) {
-        // Create a composite string from all candidate transcriptions
-        const allCandidateText = data.candidate.map((item) => item.transcript).join(" ");
-
-        // Only update if there's a change
-        setCandidateTranscript(allCandidateText);
-      }
+      // Update the transcriptions state
+      setAllTranscriptions(data);
     } catch (error) {
       console.error("[Interviewer] Error fetching transcriptions:", error);
     }
@@ -61,7 +78,7 @@ const InterviewAssistant = ({ localStream }) => {
     try {
       // Clear local transcripts
       setTranscript("");
-      setCandidateTranscript("");
+      setAllTranscriptions([]);
       setPreviousAnalysis("");
       setNextQuestion("");
       setExpectedAnswer("");
@@ -157,7 +174,13 @@ const InterviewAssistant = ({ localStream }) => {
 
   const analyzeResponse = async () => {
     // Combine interviewer and candidate transcripts for analysis
-    const combinedTranscript = transcript + " " + candidateTranscript;
+    const combinedTranscript =
+      transcript +
+      " " +
+      allTranscriptions
+        .filter((t) => t.sender === "candidate")
+        .map((t) => t.transcript)
+        .join(" ");
 
     if (!combinedTranscript.trim()) return;
 
@@ -241,7 +264,7 @@ const InterviewAssistant = ({ localStream }) => {
       // Re-enable transcript clearing
       // Clear only the transcripts, keep the analysis results
       setTranscript("");
-      setCandidateTranscript("");
+      setAllTranscriptions([]);
 
       // Clear backend transcripts
       try {
@@ -259,15 +282,55 @@ const InterviewAssistant = ({ localStream }) => {
     }
   };
 
-  // Setup polling for transcriptions
+  // Listen for user joined events to keep track of users in the room
   useEffect(() => {
-    // Start polling for transcriptions every 2 seconds
-    pollingIntervalRef.current = setInterval(fetchTranscriptions, 2000);
+    if (!socket) return;
 
+    const handleUserJoined = (userInfo) => {
+      console.log("User joined:", userInfo);
+
+      // Add user to our local user registry
+      setConnectedUsers((prev) => ({
+        ...prev,
+        [userInfo.socketId]: {
+          name: userInfo.userName,
+          role: userInfo.userRole,
+          joinedAt: new Date(),
+        },
+      }));
+    };
+
+    const handleUserLeft = (userInfo) => {
+      console.log("User left:", userInfo);
+
+      // Remove user from our local registry
+      setConnectedUsers((prev) => {
+        const newUsers = { ...prev };
+        delete newUsers[userInfo.socketId];
+        return newUsers;
+      });
+    };
+
+    // Listen for user joined and left events
+    socket.on("userJoined", handleUserJoined);
+    socket.on("userLeft", handleUserLeft);
+
+    return () => {
+      socket.off("userJoined", handleUserJoined);
+      socket.off("userLeft", handleUserLeft);
+    };
+  }, [socket]);
+
+  // Set up polling interval for fetching transcriptions
+  useEffect(() => {
     // Initial fetch
     fetchTranscriptions();
 
+    // Set up polling interval
+    pollingIntervalRef.current = setInterval(fetchTranscriptions, 3000); // every 3 seconds
+
     return () => {
+      // Clear interval on component unmount
       if (pollingIntervalRef.current) {
         clearInterval(pollingIntervalRef.current);
       }
@@ -377,25 +440,27 @@ const InterviewAssistant = ({ localStream }) => {
     if (transcriptContainerRef.current) {
       transcriptContainerRef.current.scrollTop = transcriptContainerRef.current.scrollHeight;
     }
-  }, [transcript, candidateTranscript]);
+  }, [transcript, allTranscriptions]);
 
   // Prepare the combined transcript display
   const combinedTranscriptDisplay = () => {
-    if (!transcript && !candidateTranscript) {
+    if (allTranscriptions.length === 0) {
       return "No transcription yet...";
     }
 
-    let display = "";
-
-    if (transcript) {
-      display += `Interviewer: ${transcript}\n\n`;
-    }
-
-    if (candidateTranscript) {
-      display += `Candidate: ${candidateTranscript}`;
-    }
-
-    return display;
+    // Create a display with all transcriptions in chronological order
+    return allTranscriptions.map((item, index) => {
+      const speakerName = item.senderName || (item.sender === "candidate" ? "Candidate" : "Interviewer");
+      return (
+        <div key={index} className={`mb-2 ${item.sender === "candidate" ? "text-amber-300" : "text-blue-300"}`}>
+          <span className="font-bold">{speakerName}: </span>
+          <span className="text-white">{item.transcript}</span>
+          <span className="text-xs text-slate-400 ml-2">
+            {new Date(item.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        </div>
+      );
+    });
   };
 
   return (
@@ -409,8 +474,7 @@ const InterviewAssistant = ({ localStream }) => {
       </div>
 
       <div className="flex flex-col space-y-4 h-full overflow-auto p-4">
-        {/* Debug Info - Remove in production d */}
-        <div className="bg-red-900/30 rounded-lg p-2 text-xs">
+        {/* <div className="bg-red-900/30 rounded-lg p-2 text-xs">
           <h5 className="font-bold text-white mb-1">Debug Info:</h5>
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -430,7 +494,7 @@ const InterviewAssistant = ({ localStream }) => {
               <span className="text-slate-300">{currentQuestion.length} chars</span>
             </div>
           </div>
-        </div>
+        </div> */}
 
         {/* Current Question Section */}
         <div className="bg-slate-700/50 rounded-lg p-4 flex-shrink-0 shadow-md">
@@ -479,7 +543,77 @@ const InterviewAssistant = ({ localStream }) => {
             ref={transcriptContainerRef}
             className="flex-grow overflow-y-auto text-base text-white whitespace-pre-wrap bg-slate-800/50 p-3 rounded"
           >
-            {combinedTranscriptDisplay()}
+            {allTranscriptions.length > 0 ? (
+              <div className="space-y-2">
+                {allTranscriptions.map((item, index) => {
+                  // Determine if this message is from the current user
+                  const isCurrentUser = item.socketId === socket?.id;
+
+                  // Try to get user data from our connected users if available
+                  const userData = item.socketId && connectedUsers[item.socketId];
+
+                  // Determine sender role for display - prioritize our connected users data
+                  const senderRole = (userData?.role || item.sender || "unknown").toLowerCase();
+
+                  // Set the display name with better fallbacks - prioritize connected users data
+                  const speakerName =
+                    userData?.name ||
+                    item.senderName ||
+                    (senderRole === "candidate"
+                      ? "Candidate"
+                      : senderRole === "interviewer"
+                      ? "Interviewer"
+                      : senderRole === "recruiter"
+                      ? "Recruiter"
+                      : "User");
+
+                  // Assign color and style based on role
+                  let speakerClass = "text-blue-300"; // default for interviewer
+                  let badgeClass = "bg-blue-900/50 text-blue-200"; // default badge
+                  let borderClass = "border-blue-700/30"; // default border
+
+                  if (senderRole === "candidate") {
+                    speakerClass = "text-amber-300";
+                    badgeClass = "bg-amber-900/50 text-amber-200";
+                    borderClass = "border-amber-700/30";
+                  } else if (senderRole === "recruiter") {
+                    speakerClass = "text-emerald-300";
+                    badgeClass = "bg-emerald-900/50 text-emerald-200";
+                    borderClass = "border-emerald-700/30";
+                  }
+
+                  // Add highlighting for current user's messages
+                  const messageClass = isCurrentUser ? "bg-slate-700/40 border border-slate-600/50" : "";
+
+                  return (
+                    <div
+                      key={index}
+                      className={`pb-2 mb-2 ${borderClass} border-b last:border-0 ${messageClass} rounded-md p-2`}
+                    >
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className={`font-bold ${speakerClass}`}>
+                            {speakerName}
+                            {isCurrentUser && <span className="text-xs ml-1 text-slate-400">(You)</span>}
+                          </span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full ${badgeClass}`}>{senderRole}</span>
+                        </div>
+                        <span className="text-xs text-slate-400">
+                          {new Date(item.timestamp).toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                          })}
+                        </span>
+                      </div>
+                      <div className={`text-white pl-2 border-l-2 ${borderClass}`}>{item.transcript}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-slate-400 italic text-center py-4">No transcription yet...</div>
+            )}
           </div>
         </div>
 
@@ -507,9 +641,9 @@ const InterviewAssistant = ({ localStream }) => {
           </button>
           <button
             onClick={analyzeResponse}
-            disabled={isAnalyzing || !(transcript.trim() || candidateTranscript.trim())}
+            disabled={isAnalyzing || !(transcript.trim() || allTranscriptions.length > 0)}
             className={`px-4 py-2 ${
-              isAnalyzing || !(transcript.trim() || candidateTranscript.trim())
+              isAnalyzing || !(transcript.trim() || allTranscriptions.length > 0)
                 ? "bg-emerald-700/50 cursor-not-allowed"
                 : "bg-emerald-600 hover:bg-emerald-700"
             } text-white rounded-lg font-medium transition-colors w-2/3 shadow-md flex items-center justify-center`}

@@ -1,12 +1,31 @@
 import { useEffect, useState, useRef } from "react";
 import config from "../config/config";
 
-const CandidateTranscription = ({ localStream }) => {
+const CandidateTranscription = ({ localStream, userName, socket, userRole }) => {
   const [isConnected, setIsConnected] = useState(false);
+  const [lastTranscript, setLastTranscript] = useState("");
+  const lastTranscriptTimestamp = useRef(0);
 
   // Function to send transcription via HTTP POST
   const sendTranscription = async (transcript) => {
     try {
+      // Skip if this is the same as the last transcript or if socket is not connected
+      if (transcript === lastTranscript || !socket) {
+        return false;
+      }
+
+      // Prevent rapid duplicate submissions by checking time since last submission
+      const now = Date.now();
+      if (now - lastTranscriptTimestamp.current < 1000) {
+        return false;
+      }
+
+      // Update tracking variables
+      setLastTranscript(transcript);
+      lastTranscriptTimestamp.current = now;
+
+      const timestamp = new Date().toISOString();
+
       const response = await fetch(`${config.nodeApiUrl}/api/transcription`, {
         method: "POST",
         headers: {
@@ -14,8 +33,10 @@ const CandidateTranscription = ({ localStream }) => {
         },
         body: JSON.stringify({
           transcript: transcript,
-          timestamp: new Date().toISOString(),
-          sender: "candidate",
+          timestamp,
+          sender: userRole || "candidate",
+          senderName: userName || "Candidate",
+          socketId: socket?.id || null,
         }),
       });
 
@@ -59,10 +80,10 @@ const CandidateTranscription = ({ localStream }) => {
     });
 
     // Connect to Deepgram
-    const deepgramSocket = new WebSocket("wss://api.deepgram.com/v1/listen", [
-      "token",
-      "1f3fc83e4559e5e5db749b92a75fbd0d66813d3e",
-    ]);
+    const deepgramSocket = new WebSocket(
+      "wss://api.deepgram.com/v1/listen?model=nova-3&punctuate=true&utterances=true",
+      ["token", "1f3fc83e4559e5e5db749b92a75fbd0d66813d3e"]
+    );
 
     deepgramSocket.onopen = () => {
       setIsConnected(true);

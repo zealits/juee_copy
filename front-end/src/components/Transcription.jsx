@@ -216,6 +216,58 @@ const InterviewAssistant = ({ localStream }) => {
     };
   }, [localStream]);
 
+  useEffect(() => {
+    // Fetch all transcriptions periodically
+    const fetchTranscriptions = async () => {
+      try {
+        const response = await fetch(`${config.nodeApiUrl}/api/transcriptions/all`);
+        const data = await response.json();
+
+        if (data && data.length > 0) {
+          // Sort data by timestamp to ensure chronological order
+          const sortedData = [...data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+          // Format transcriptions with proper speaker identification and role information
+          const formattedTranscript = sortedData
+            .map((item) => {
+              // Enhanced speaker name identification with fallbacks
+              const senderRole = item.sender || "unknown";
+              const speakerName =
+                item.senderName ||
+                (senderRole === "candidate"
+                  ? "Candidate"
+                  : senderRole === "interviewer"
+                  ? "Interviewer"
+                  : senderRole === "recruiter"
+                  ? "Recruiter"
+                  : "Unknown");
+
+              // Format timestamp
+              const timestamp = new Date(item.timestamp).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+              });
+
+              // Return formatted line with role and timestamp
+              return `[${timestamp}] ${speakerName} (${senderRole}): ${item.transcript}`;
+            })
+            .join("\n\n");
+
+          setTranscript(formattedTranscript);
+        }
+      } catch (error) {
+        console.error("Error fetching transcriptions:", error);
+      }
+    };
+
+    // Fetch initially and set up interval
+    fetchTranscriptions();
+    const intervalId = setInterval(fetchTranscriptions, 5000); // every 5 seconds
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   // Auto-scroll the transcript container
   useEffect(() => {
     if (transcriptContainerRef.current) {

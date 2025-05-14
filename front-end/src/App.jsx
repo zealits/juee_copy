@@ -55,6 +55,25 @@ function App() {
   // Determine if the user should see the interview assistant
   const showInterviewAssistant = userRole === "interviewer" || userRole === "recruiter";
 
+  // Extract the user name from localStorage if available
+  const [userName, setUserName] = useState(() => {
+    if (typeof window !== "undefined") {
+      const storedName = localStorage.getItem("userName");
+      return storedName || "User";
+    }
+    return "User";
+  });
+
+  // Update userName when joining room
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedName = localStorage.getItem("userName");
+      if (storedName) {
+        setUserName(storedName);
+      }
+    }
+  }, [isJoined]);
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-900 to-slate-800 text-white">
       {/* Notification system is always visible */}
@@ -121,12 +140,19 @@ function App() {
             {/* Assistant area - only shown for interviewers and recruiters */}
             {localStream && showInterviewAssistant && (
               <div className="w-1/2 flex flex-col overflow-hidden">
-                <InterviewAssistant localStream={localStream} />
+                <InterviewAssistant localStream={localStream} userName={userName} socket={socket} userRole={userRole} />
               </div>
             )}
 
             {/* Hidden transcription for candidates - only logs to console */}
-            {localStream && userRole === "candidate" && <CandidateTranscription localStream={localStream} />}
+            {localStream && userRole === "candidate" && (
+              <CandidateTranscription
+                localStream={localStream}
+                userName={userName}
+                socket={socket}
+                userRole={userRole}
+              />
+            )}
           </div>
 
           {/* Chat interface */}

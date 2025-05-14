@@ -144,6 +144,15 @@ io.on("connect", (socket) => {
     // add this socket to the socket room
     socket.join(client.room.roomName);
 
+    // Notify others in the room that a new user has joined
+    socket.to(client.room.roomName).emit("userJoined", {
+      userName: client.userName,
+      socketId: socket.id,
+      userRole: client.userRole,
+    });
+
+    console.log(`User ${client.userName} (${client.userRole}) joined room ${client.room.roomName}`);
+
     //fetch the first 0-5 pids in activeSpeakerList
     const audioPidsToCreate = client.room.activeSpeakerList.slice(0, 5);
     //find the videoPids and make an array with matching indicies
@@ -402,40 +411,91 @@ app.use(bodyParser.json());
 const transcriptions = {
   candidate: [],
   interviewer: [],
+  recruiter: [], // Add specific array for recruiter role
+  all: [],
 };
 
 // HTTP endpoint for receiving transcriptions
 app.post("/api/transcription", (req, res) => {
   try {
-    const { sender, transcript, timestamp } = req.body;
+    const { sender, transcript, timestamp, socketId } = req.body;
     const formattedTimestamp = timestamp || new Date().toISOString();
+    const senderName = req.body.senderName || sender || "Unknown";
+    const senderRole = req.body.sender || "unknown";
 
     if (!transcript) {
       return res.status(400).json({ error: "Transcript is required" });
     }
 
-    // Log the transcription
-    console.log(`[${formattedTimestamp}] ${sender || "Unknown"} Transcription: ${transcript}`);
+    // Find user information from rooms if socketId is provided
+    let userInfo = null;
+    if (socketId) {
+      // Try to find the user in active rooms
+      for (const room of rooms) {
+        const client = room.clients.find((c) => c.socket.id === socketId);
+        if (client) {
+          userInfo = {
+            userName: client.userName,
+            userRole: client.userRole,
+          };
+          break;
+        }
+      }
+    }
 
-    // Store the transcription
-    if (sender === "candidate") {
-      transcriptions.candidate.push({
-        transcript,
-        timestamp: formattedTimestamp,
+    // Create a transcription entry with verified user information
+    const transcriptionEntry = {
+      transcript,
+      timestamp: formattedTimestamp,
+      sender: userInfo ? userInfo.userRole : senderRole,
+      senderName: userInfo ? userInfo.userName : senderName,
+      socketId,
+    };
+
+    // Check for potential duplicates (within a small time window and identical content)
+    const isDuplicate = transcriptions.all.some((existingEntry) => {
+      // Check if same content from same sender within 2 seconds
+      return (
+        existingEntry.transcript === transcript &&
+        existingEntry.socketId === socketId &&
+        Math.abs(new Date(existingEntry.timestamp) - new Date(formattedTimestamp)) < 2000
+      );
+    });
+
+    if (isDuplicate) {
+      console.log(`[${formattedTimestamp}] Duplicate transcription detected and prevented: ${transcript}`);
+      return res.status(200).json({
+        status: "success",
+        message: "Duplicate transcription ignored",
       });
+    }
+
+    // Store the transcription both in specific role array and in chronological all array
+    if (transcriptionEntry.sender === "candidate") {
+      transcriptions.candidate.push(transcriptionEntry);
 
       // Log to a file
       fs.appendFileSync(
         path.join(__dirname, "candidate-transcriptions.txt"),
-        `[${formattedTimestamp}] ${transcript}\n`,
+        `[${formattedTimestamp}] ${senderName}: ${transcript}\n`,
         { encoding: "utf8" }
       );
-    } else if (sender === "interviewer") {
-      transcriptions.interviewer.push({
-        transcript,
-        timestamp: formattedTimestamp,
-      });
+    } else if (transcriptionEntry.sender === "interviewer") {
+      transcriptions.interviewer.push(transcriptionEntry);
+    } else if (transcriptionEntry.sender === "recruiter") {
+      transcriptions.recruiter.push(transcriptionEntry);
     }
+
+    // Add to the all array (for chronological ordering)
+    transcriptions.all.push(transcriptionEntry);
+
+    // Sort all transcriptions by timestamp
+    transcriptions.all.sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    // Log the transcription
+    console.log(
+      `[${formattedTimestamp}] ${transcriptionEntry.senderName} (${transcriptionEntry.sender}): ${transcript}`
+    );
 
     return res.status(200).json({
       status: "success",
@@ -456,6 +516,11 @@ app.get("/api/transcriptions", (req, res) => {
   return res.status(200).json(transcriptions);
 });
 
+// HTTP endpoint for getting all transcriptions in chronological order
+app.get("/api/transcriptions/all", (req, res) => {
+  return res.status(200).json(transcriptions.all);
+});
+
 // HTTP endpoint for getting latest candidate transcriptions
 app.get("/api/transcriptions/candidate", (req, res) => {
   return res.status(200).json(transcriptions.candidate);
@@ -466,10 +531,17 @@ app.get("/api/transcriptions/interviewer", (req, res) => {
   return res.status(200).json(transcriptions.interviewer);
 });
 
+// HTTP endpoint for getting latest recruiter transcriptions
+app.get("/api/transcriptions/recruiter", (req, res) => {
+  return res.status(200).json(transcriptions.recruiter);
+});
+
 // HTTP endpoint for clearing transcriptions
 app.post("/api/transcriptions/clear", (req, res) => {
   transcriptions.candidate = [];
   transcriptions.interviewer = [];
+  transcriptions.recruiter = []; // Clear recruiter transcriptions too
+  transcriptions.all = [];
   return res.status(200).json({
     status: "success",
     message: "Transcriptions cleared",

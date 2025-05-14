@@ -17,7 +17,7 @@ const config = {
 
   // Get current environment settings
   get currentEnv() {
-    const env = process.env.NODE_ENV || "development";
+    const env = process.env.NODE_ENV || "production";
     return this.env[env];
   },
 
@@ -59,8 +59,8 @@ const config = {
   webRtcTransport: {
     listenIps: [
       {
-        ip: "127.0.0.1", // for production for dev use 127.0.0.1
-        //  announcedIp: "154.53.42.27", // for production for dev remove this
+        ip: "0.0.0.0", // for production for dev use 127.0.0.1
+         announcedIp: "154.53.42.27", // for production for dev remove this
       },
     ],
     //For a typical video stream with HD quality, you might set maxIncomingBitrate

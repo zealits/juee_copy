@@ -13,6 +13,9 @@ const InterviewAssistant = ({ localStream }) => {
   const pythonSocketRef = useRef(null);
   const transcriptContainerRef = useRef(null);
 
+  // Configuration for message merging
+  const MESSAGE_MERGE_WINDOW_MS = 30000; // 30 seconds
+
   const resetInterview = async () => {
     try {
       // in development, we will use the backend at http://localhost:8004 as this python backend is running on port 8004
@@ -216,6 +219,63 @@ const InterviewAssistant = ({ localStream }) => {
     };
   }, [localStream]);
 
+  // Helper function to group consecutive messages from the same speaker
+  const groupConsecutiveMessages = (transcriptions) => {
+    if (!transcriptions || transcriptions.length === 0) return [];
+
+    // First sort by timestamp to ensure chronological order
+    const sortedMessages = [...transcriptions].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    const groupedMessages = [];
+    let currentGroup = null;
+
+    for (const message of sortedMessages) {
+      // If this is the first message or sent by a different speaker, start a new group
+      if (!currentGroup || currentGroup.sender !== message.sender || currentGroup.senderName !== message.senderName) {
+        // Add the previous group to our results if it exists
+        if (currentGroup) {
+          groupedMessages.push(currentGroup);
+        }
+
+        // Start a new group with this message
+        currentGroup = {
+          ...message,
+          originalMessages: [{ ...message }],
+        };
+      } else {
+        // Same speaker, merge with the current group
+        // Check if messages are within the configured time window
+        const timeDiff = Math.abs(new Date(message.timestamp) - new Date(currentGroup.timestamp));
+
+        // Only merge if messages are within the configured time window
+        if (timeDiff <= MESSAGE_MERGE_WINDOW_MS) {
+          // Append the transcript with a line break
+          currentGroup.transcript += "\n" + message.transcript;
+
+          // Update the timestamp to the latest message
+          currentGroup.timestamp = message.timestamp;
+
+          // Keep track of original messages for reference
+          currentGroup.originalMessages.push({ ...message });
+        } else {
+          // Time difference is too large, start a new group
+          groupedMessages.push(currentGroup);
+          currentGroup = {
+            ...message,
+            originalMessages: [{ ...message }],
+          };
+        }
+      }
+    }
+
+    // Don't forget to add the last group
+    if (currentGroup) {
+      groupedMessages.push(currentGroup);
+    }
+
+    return groupedMessages;
+  };
+
   useEffect(() => {
     // Fetch all transcriptions periodically
     const fetchTranscriptions = async () => {
@@ -224,11 +284,11 @@ const InterviewAssistant = ({ localStream }) => {
         const data = await response.json();
 
         if (data && data.length > 0) {
-          // Sort data by timestamp to ensure chronological order
-          const sortedData = [...data].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+          // Group consecutive messages from the same speaker
+          const groupedData = groupConsecutiveMessages(data);
 
           // Format transcriptions with proper speaker identification and role information
-          const formattedTranscript = sortedData
+          const formattedTranscript = groupedData
             .map((item) => {
               // Enhanced speaker name identification with fallbacks
               const senderRole = item.sender || "unknown";
@@ -249,8 +309,15 @@ const InterviewAssistant = ({ localStream }) => {
                 second: "2-digit",
               });
 
+              // Format the message differently if it's a merged message
+              let messageText = item.transcript;
+              if (item.originalMessages && item.originalMessages.length > 1) {
+                messageText = item.transcript.replace(/\n/g, "\n  "); // Indent continued lines
+                messageText += `\n  (${item.originalMessages.length} messages merged)`;
+              }
+
               // Return formatted line with role and timestamp
-              return `[${timestamp}] ${speakerName} (${senderRole}): ${item.transcript}`;
+              return `[${timestamp}] ${speakerName} (${senderRole}):\n  ${messageText}`;
             })
             .join("\n\n");
 

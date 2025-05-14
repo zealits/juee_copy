@@ -17,6 +17,9 @@ const InterviewAssistant = ({ localStream, userName, socket, userRole }) => {
   const lastTranscriptTimestamp = useRef(0);
   const [connectedUsers, setConnectedUsers] = useState({});
 
+  // Configuration for message merging
+  const MESSAGE_MERGE_WINDOW_MS = 30000; // 30 seconds
+
   // Function to send transcription via HTTP POST
   const sendTranscription = async (transcript) => {
     try {
@@ -67,11 +70,71 @@ const InterviewAssistant = ({ localStream, userName, socket, userRole }) => {
       const response = await fetch(`${config.nodeApiUrl}/api/transcriptions/all`);
       const data = await response.json();
 
+      // Group messages from the same speaker
+      const groupedTranscriptions = groupConsecutiveMessages(data);
+
       // Update the transcriptions state
-      setAllTranscriptions(data);
+      setAllTranscriptions(groupedTranscriptions);
     } catch (error) {
       console.error("[Interviewer] Error fetching transcriptions:", error);
     }
+  };
+
+  // Helper function to group consecutive messages from the same speaker
+  const groupConsecutiveMessages = (transcriptions) => {
+    if (!transcriptions || transcriptions.length === 0) return [];
+
+    // First sort by timestamp to ensure chronological order
+    const sortedMessages = [...transcriptions].sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+
+    const groupedMessages = [];
+    let currentGroup = null;
+
+    for (const message of sortedMessages) {
+      // If this is the first message or sent by a different speaker, start a new group
+      if (!currentGroup || currentGroup.socketId !== message.socketId || currentGroup.sender !== message.sender) {
+        // Add the previous group to our results if it exists
+        if (currentGroup) {
+          groupedMessages.push(currentGroup);
+        }
+
+        // Start a new group with this message
+        currentGroup = {
+          ...message,
+          originalMessages: [{ ...message }],
+        };
+      } else {
+        // Same speaker, merge with the current group
+        // Check if messages are within the configured time window
+        const timeDiff = Math.abs(new Date(message.timestamp) - new Date(currentGroup.timestamp));
+
+        // Only merge if messages are within the configured time window
+        if (timeDiff <= MESSAGE_MERGE_WINDOW_MS) {
+          // Append the transcript with a line break
+          currentGroup.transcript += "\n" + message.transcript;
+
+          // Update the timestamp to the latest message
+          currentGroup.timestamp = message.timestamp;
+
+          // Keep track of original messages for reference
+          currentGroup.originalMessages.push({ ...message });
+        } else {
+          // Time difference is too large, start a new group
+          groupedMessages.push(currentGroup);
+          currentGroup = {
+            ...message,
+            originalMessages: [{ ...message }],
+          };
+        }
+      }
+    }
+
+    // Don't forget to add the last group
+    if (currentGroup) {
+      groupedMessages.push(currentGroup);
+    }
+
+    return groupedMessages;
   };
 
   const resetInterview = async () => {
@@ -606,7 +669,31 @@ const InterviewAssistant = ({ localStream, userName, socket, userRole }) => {
                           })}
                         </span>
                       </div>
-                      <div className={`text-white pl-2 border-l-2 ${borderClass}`}>{item.transcript}</div>
+                      <div className={`text-white pl-2 border-l-2 ${borderClass}`}>
+                        {/* If the message is merged, display with line breaks */}
+                        {item.transcript.split("\n").map((line, lineIndex) => (
+                          <div key={lineIndex} className={lineIndex > 0 ? "mt-2" : ""}>
+                            {line}
+                            {/* Show timestamp for merged messages if there are multiple */}
+                            {item.originalMessages &&
+                              item.originalMessages.length > 1 &&
+                              lineIndex < item.originalMessages.length && (
+                                <span className="text-xs text-slate-500 ml-2">
+                                  {new Date(item.originalMessages[lineIndex].timestamp).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </span>
+                              )}
+                          </div>
+                        ))}
+                        {/* If multiple messages were merged, show a subtle indicator */}
+                        {item.originalMessages && item.originalMessages.length > 1 && (
+                          <div className="text-xs text-slate-500 mt-1 italic">
+                            {item.originalMessages.length} consecutive messages merged
+                          </div>
+                        )}
+                      </div>
                     </div>
                   );
                 })}

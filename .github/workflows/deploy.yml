@@ -49,6 +49,7 @@ jobs:
             if [ -d "juee_copy" ]; then
               echo "Repository exists, pulling latest changes..."
               cd juee_copy
+              git reset --hard
               git pull origin main
             else
               echo "Cloning repository..."
